@@ -13,7 +13,7 @@
 
 <div align="center">
   <img src="https://img.shields.io/badge/[_NETWORK_]-_ADMIN_-00FF41?style=for-the-badge&labelColor=black" alt="Network Admin">
-  <img src="https://img.shields.io/badge/[_OSI_MODEL_]-_LAYERS_1--7_-00FF41?style=for-the-badge&labelColor=black" alt="OSI">
+  <img src="https://img.shields.io/badge/[_OSI_MODEL_]-_LAYERS_1--5_-00FF41?style=for-the-badge&labelColor=black" alt="OSI">
   <img src="https://img.shields.io/badge/[_PACKET_]-_CAPTURED_-00FF41?style=for-the-badge&labelColor=black" alt="Packets">
 </div>
 </div>
@@ -27,7 +27,7 @@
 Repositório para registros de tráfego e infraestrutura prática desenvolvida no **4º semestre da graduação**. Aqui, os protocolos deixam de ser teoria e se tornam implementações reais de rede.
 
 
-### Camadas de Abstração (OSI Model)
+### Camadas de Abstração (TCP/IP Model)
 * **[L5] Aplicação:** Interface direta com o usuário e serviços de rede (HTTP, DNS, FTP, DHCP).
 * **[L4] Transporte:** Controle de fluxos `TCP/UDP` e mecanismos de janela.
 * **[L3] Rede:** Roteamento, máscaras de sub-rede e endereçamento `IPv4/IPv6`.
