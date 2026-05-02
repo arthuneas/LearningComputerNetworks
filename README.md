@@ -13,7 +13,7 @@
 
 <div align="center">
   <img src="https://img.shields.io/badge/[_NETWORK_]-_ADMIN_-00FF41?style=for-the-badge&labelColor=black" alt="Network Admin">
-  <img src="https://img.shields.io/badge/[_OSI_MODEL_]-_LAYERS_1--5_-00FF41?style=for-the-badge&labelColor=black" alt="OSI">
+  <img src="https://img.shields.io/badge/[_TCP/IP_MODEL_]-_LAYERS_1--5_-00FF41?style=for-the-badge&labelColor=black" alt="TCP/IP">
   <img src="https://img.shields.io/badge/[_PACKET_]-_CAPTURED_-00FF41?style=for-the-badge&labelColor=black" alt="Packets">
 </div>
 </div>
