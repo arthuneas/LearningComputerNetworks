@@ -1,7 +1,7 @@
 import socket
 import threading
 
-host = '127.0.0.1'
+host = '172.29.103.178'
 port = 12345
 
 nickname = input("Choose a nickname: ")
