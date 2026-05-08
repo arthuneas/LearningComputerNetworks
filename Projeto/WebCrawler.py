@@ -1,9 +1,12 @@
 import socket
 from bs4 import BeautifulSoup
+from urllib.parse import urljoin, urlparse
+
 
 def requisicao(host, porta, caminho):
     #cria a conexão via socket, envia o get HTTP e retorna a resposta
     cliente = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    cliente.settimeout(5.0)
     cliente.connect((host, porta))
 
     #a requisição http manual com as quebras de linha padrão do protocolo
@@ -72,7 +75,7 @@ def pegarRedirecionamento(cabecalhos):
         #transformaremos o location para minusculo para conferir se algum header
         if linha.lower().startswith("location"):
             #pega tudo depois de location e divide nos primeiros dois pontos
-            caminho = linha.split(":", 1)
+            caminho = linha.split(":", 1)[1].strip()
             return caminho
 
     return None
@@ -80,6 +83,7 @@ def pegarRedirecionamento(cabecalhos):
 
 #lógica do crawler
 def crawler(host, porta, caminho_inicial):
+    relatorio = []
     fila = [caminho_inicial]
     visitados = set() #não aceita duplicatas na checagem da lista
 
@@ -93,7 +97,6 @@ def crawler(host, porta, caminho_inicial):
         print(f"Caminho Atual: {caminhoAtual}")
         visitados.add(caminhoAtual)
 
-
         try:
             #primeiro baixa a página
             resposta = requisicao(host, porta, caminhoAtual)
@@ -101,45 +104,73 @@ def crawler(host, porta, caminho_inicial):
             #resposta do servidor
             cabecalhos, status, html = processarResposta(resposta)
             print(f"     STATUS: {status}")
+            
+            #organiza o relatório e une com a descrição
+            descricaoStatus = {200: "OK", 301: "Moved Permanently", 302: "Found", 400: "Bad Request", 404: "Not Found", 500: "Internal Server Error"}.get(status, "Outro")
+            relatorio.append(f"URL: {caminhoAtual} | Status: {status} ({descricaoStatus})")
 
             #toma uma decisão baseada no status
             if status == 200:
                 newLinks = extrairLink(html)
                 print(f"     Encontrados {len(newLinks)} links nessa página")
 
-                fila.extend(newLinks)
+                for link in newLinks:
+                    #transforma caminho relativo em absoluto
+                    caminhoAbsoluto = urljoin(caminhoAtual, link)
+                    
+                    #remove ancoras
+                    caminhoLimpa = caminhoAbsoluto.split("#")[0]
+                    
+                    #verifica o dominio, se ele é o mesmo, e ignora links para outros sites
+                    parsed = urlparse(caminhoLimpa)
+                    if parsed.netloc == "" or parsed.netloc == host:
+                        caminho = parsed.path
+                        
+                        if caminho.startswith("/") and caminho not in visitados and caminho not in fila:
+                            fila.append(caminho)
+                    
 
             elif status == 301 or status == 302:
                 #procura onde o servidor vai redirecionar
                 caminho = pegarRedirecionamento(cabecalhos)
 
                 if caminho:
-                    print(f"Status {status}\n")
-                    print(f"Redirecionamento para: {caminho}")
+                    print(f"    Redirecionamento para: {caminho}")
 
                     #tratamento de caminhos relativos e absolutos
                     #se for em um caminho absoluto, outro site, ele vai dar erro. Pois o crawler vai tem um host definido
                     #por isso, é necesário realizr a garantia de que o site siga em um caminho relativo
                     if caminho.startswith("/"):
-                        if caminho not in visitados:
+                        if caminho not in visitados and caminho not in fila:
                             fila.append(caminho) #adiciona o caminho para processamento na fila
-                            print(f"Caminho {caminho} está sendo redirecionado. ")
+                            print(f"    Caminho {caminho} está sendo redirecionado. ")
 
                     else:
-                        print("Redirecionamento recebido, mas não há cabeçalho Location")
+                        print("     ignorando redirecionamento absoluto/externo")
+                        
+                else:
+                    print("     redirecionamento recebido, mas não há cabeçalho Location")
 
 
             elif status == 404 or status == 500:
                 print(f"Status: {status}\n")
                 print("    Erro no servidor ou página não encontrada.")
+                
+                
 
         except Exception as e:
             print(f"Erro Geral: {e}")
-
+            relatorio.append(f"URL: {caminhoAtual} | Status: ERRO ({e})")
+            
+    with open("relatorio_crawler.txt", "w", encoding="utf-8") as arquivo:
+        for linha in relatorio:
+            arquivo.write(linha + "\n")
+    print("Relatório Gerado")
 
 #execucao principal
 if __name__ == "__main__":
-    HOST = ""
-    PORTA = 20
+    HOST = "info.cern.ch"
+    PORTA = 80
+    CAMINHO = "/hypertext/WWW/TheProject.html"
 
-    crawler(HOST, PORTA, "/")
+    crawler(HOST, PORTA, CAMINHO)
