@@ -4,31 +4,38 @@ import threading
 host = 'localhost'
 port = 12345
 
+serverAddress = (host, port)
+
 nickname = input("Choose a nickname: ")
 
 client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) #declarar um socket de internet e um objeto UDP
-client.connect((host, port)) #conectando o cliente ao servidor
 
-mensagem_entrada = f"JOIN:{nickname}"
-client.send(mensagem_entrada.encode('ascii'))
+mensagem = f"JOIN:{nickname}"
+client.sendto(mensagem.encode('utf-8'), serverAddress)
 
 def receive():
     while True:
         try:
-            message = client.recv(1024).decode('ascii')
-            print(message)
+            message, _ = client.recvfrom(1024)
+            print(message.decode('utf-8'))
                 
-        except Exception as e:
-            print(f"ocorreu um erro: {e}")
-            client.close()
+        except Exception :
+            print("Você saiu do chat.")
             break
             
             
 def write():
     while True:
+        text = input("")
+        
+        if text.strip().lower() == 'sair':
+            client.close()
+            break
+        
+        message = f'{nickname}: {text}'
+        
         try:
-            message = f'{nickname}: {input("")}'
-            client.send(message.encode('ascii'))
+            client.sendto(message.encode('utf-8'), serverAddress)
         except:
             break
         

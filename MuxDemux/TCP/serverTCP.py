@@ -1,5 +1,6 @@
 import socket
 import threading
+import time
 
 host = 'localhost'
 port = 12345
@@ -19,7 +20,11 @@ def broadcast(message): #função para enviar mensagens para todos os clientes
 def handle(client): #função para lidar com mensagens de um cliente específico
     while True:
         try:
-            message = client.recv(1024) #tente receber uma mensagem de 1024 bytes do cliente 
+            message = client.recv(1024) #tente receber uma mensagem de 1024 bytes do cliente
+            
+            if not message: # Se a mensagem for vazia, significa que o cliente fechou o terminal
+                raise Exception("Cliente desconectou silenciosamente")
+             
             broadcast(message) #envie a mensagem para todos os clientes
         
         except: #se houver um erro, o cliente provavelmente se desconectou
@@ -27,7 +32,7 @@ def handle(client): #função para lidar com mensagens de um cliente específico
             clients.remove(client) #remova o cliente do vetor de clientes
             client.close() #feche a conexão com o cliente
             nickname = nicknames[index] #encontre o apelido no vetor na posição index do cliente que se desconectou
-            broadcast(f'{nickname} left the chat!'.encode('ascii')) #envie uma mensagem para todos os clientes informando que o cliente se desconectou
+            broadcast(f'{nickname} left the chat!'.encode('utf-8')) #envie uma mensagem para todos os clientes informando que o cliente se desconectou
             nicknames.remove(nickname) #remova o apelido do vetor de apelidos
             break
         
@@ -37,14 +42,15 @@ def receive(): #função para receber conexões de clientes
         client, address = server.accept() #aceite uma nova conexão de cliente
         print(f'Connected with {str(address)}') #imprima o endereço do cliente que se conectou
         
-        client.send('NICK'. encode('ascii')) #A primeira mensagem a ser enviada ao servidor será o nickname
-        nickname = client.recv(1024).decode(('ascii')) #o cliente deve digitar, em até 1024 bytes/characteres, o seu nickname
+        client.send('NICK'. encode('utf-8')) #A primeira mensagem a ser enviada ao servidor será o nickname
+        nickname = client.recv(1024).decode(('utf-8')) #o cliente deve digitar, em até 1024 bytes/characteres, o seu nickname
         clients.append(client) #adiciona a resposta ao vetor de clientes
         nicknames.append(nickname) #adiciona o nickname ao vetor de nicknames
         
         print(f'the nickname of client {client} is {nickname}!') 
-        broadcast(f'{nickname} joined the chat!.'.encode('ascii')) #indicamos efetivamente a entrada do client no chat
-        client.send(f'Connectd to the server!'.encode('ascii')) #mostramos para todos os clientes do servidor que esse detemrinado cliente está conectado
+        broadcast(f'{nickname} joined the chat!.'.encode('utf-8')) #indicamos efetivamente a entrada do client no chat
+        time.sleep(0.1)
+        client.send(f'Connectd to the server!'.encode('utf-8')) #mostramos para todos os clientes do servidor que esse detemrinado cliente está conectado
         
         thread = threading.Thread(target=handle, args=(client,)) #criaremos threads para lidar com muitos clientes em um único servidor. Uma thread por cliente.
         thread.start() #inicializa a thread
@@ -52,4 +58,3 @@ def receive(): #função para receber conexões de clientes
 if __name__ == '__main__':
     print("server is listening!")
     receive()
-        

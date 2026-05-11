@@ -5,7 +5,7 @@ host = 'localhost'
 port = 12345
 
 
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #declarar um socket de internet e um objeto TCP
+server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) #declarar um socket de internet e um objeto UDP
 server.bind((host, port)) #conectar o socket a um endereço e porta específicos
 
 clients = {} #declaramos um dicionário para cada cliente e outro para os apelidos dos clientes
@@ -21,8 +21,7 @@ print("Server is listening!")
 while True:
     try:
         message, address = server.recvfrom(1024) #tente receber uma mensagem de 1024 bytes do cliente 
-        decodeMessage = message.decode(('ascii'))
-        broadcast(message) #envie a mensagem para todos os clientes
+        decodeMessage = message.decode(('utf-8'))
         
         if decodeMessage.startswith("JOIN:"):
             nickname = decodeMessage.split(":")[1]
@@ -31,9 +30,9 @@ while True:
             print(f"Conectado com {str(address)} como {nickname}")
             
             joinMsg = f"{nickname} joined the chat!"
-            broadcast(joinMsg.encode('ascii'), address)
+            broadcast(joinMsg.encode('utf-8'), address)
             
-            server.sendto("Connected to the server!".encode('ascii'), address)
+            server.sendto("Connected to the server!".encode('utf-8'), address)
             
         else:
             broadcast(message, address)

@@ -12,23 +12,34 @@ client.connect((host, port)) #conectando o cliente ao servidor
 def receive():
     while True:
         try:
-            message = client.recv(1024).decode('ascii')
+            message = client.recv(1024).decode('utf-8')
             
             if message == 'NICK':
-                client.send(nickname.encode('ascii'))
+                client.send(nickname.encode('utf-8'))
             else: 
                 print(message)
                 
         except:
-            print("an erroer occurred!")
+            print("Você se desconectou do chat.")
             client.close()
             break
             
             
 def write():
     while True:
-        message = f'{nickname}: {input("")}'
-        client.send(message.encode('ascii'))
+        text = input("")
+        
+        if text.strip().lower() == 'sair':
+            client.close()
+            break
+        
+        message = f'{nickname}: {text}'
+        
+        try:
+            client.send(message.encode('utf-8'))
+        except:
+            break
+        
         
 receive_thread = threading.Thread(target=receive)
 receive_thread.start()
